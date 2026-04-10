@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแก้ไขจดหมายข่าว - PEA Buachet (Typography)</title>
+    <title>ระบบแก้ไขจดหมายข่าว - PEA Buachet (Image Alignment)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
@@ -86,20 +86,20 @@
             height: 100%;
             overflow: hidden;
             border-radius: calc(var(--img-radius) - (var(--img-border-width) / 1.5));
-            background: #eee;
+            background: #f8f8f8; /* สีพื้นหลังกรอบเพื่อความชัดเจน */
             position: relative;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            align-items: center; /* จัดกึ่งกลางแนวตั้ง */
+            justify-content: center; /* จัดกึ่งกลางแนวนอน */
         }
 
-        /* ตั้งค่าให้รูปภาพอยู่ตรงกลางและอยู่ภายใต้ขอบเขตของกรอบพอดี (contain) */
+        /* ตั้งค่าให้รูปภาพอยู่ตรงกลางและอยู่ภายใต้ขอบเขตของกรอบ (Contain) */
         .draggable-frame img {
             max-width: 100%;
             max-height: 100%;
-            width: 100%;
-            height: 100%;
-            object-fit: contain; 
+            width: auto; /* ให้กว้างตามสัดส่วน */
+            height: auto; /* ให้สูงตามสัดส่วน */
+            object-fit: contain; /* มั่นใจว่าภาพไม่ตกกรอบและไม่ถูกตัด */
             object-position: center;
             pointer-events: none;
             display: block;
