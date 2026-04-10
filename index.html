@@ -93,11 +93,13 @@
             justify-content: center;
         }
 
-        /* ตั้งค่าให้รูปภาพอยู่ตรงกลางและครอบคลุมพื้นที่ */
+        /* ตั้งค่าให้รูปภาพอยู่ตรงกลางและอยู่ภายใต้ขอบเขตของกรอบพอดี (contain) */
         .draggable-frame img {
+            max-width: 100%;
+            max-height: 100%;
             width: 100%;
             height: 100%;
-            object-fit: cover; 
+            object-fit: contain; 
             object-position: center;
             pointer-events: none;
             display: block;
