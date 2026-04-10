@@ -80,6 +80,7 @@
             display: flex;
         }
         
+        /* แก้ไขส่วนกรอบภาพให้จัดวางกึ่งกลางเสมอ */
         .draggable-frame .img-container {
             width: 100%;
             height: 100%;
@@ -87,13 +88,19 @@
             border-radius: calc(var(--img-radius) - (var(--img-border-width) / 1.5));
             background: #eee;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
+        /* ตั้งค่าให้รูปภาพอยู่ตรงกลางและครอบคลุมพื้นที่ */
         .draggable-frame img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: cover; 
+            object-position: center;
             pointer-events: none;
+            display: block;
         }
 
         .resize-handle {
@@ -218,7 +225,7 @@
                     </div>
                 </div>
 
-                <!-- New Vertical Fix Menu -->
+                <!-- Vertical Fix Menu -->
                 <div class="pt-2 border-t border-indigo-100">
                     <label class="text-[9px] font-bold text-indigo-600 uppercase block mb-1">การจัดวางแนวตั้ง (Vertical Fix)</label>
                     <div class="grid grid-cols-2 gap-2">
@@ -354,7 +361,7 @@
                     <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
                 </div>
                 <div id="el-news-body" class="draggable-element" style="width: 700px; top: 815px; left: 70px;" onclick="selectElement(this)">
-                    <p contenteditable="true" class="text-lg text-slate-800 leading-relaxed text-distributed">รายละเอียดข่าิจกรรมที่คุณต้องการสื่อสาร สามารถพิมพ์และปรับแต่งตำแหน่งได้ตามสะดวก การใช้การกระจายคำแบบไทยจะช่วยให้ย่อหน้าดูเป็นระเบียบและสวยงามมากขึ้นสำหรับจดหมายข่าวที่เป็นทางการ</p>
+                    <p contenteditable="true" class="text-lg text-slate-800 leading-relaxed text-distributed">รายละเอียดกิจกรรมที่คุณต้องการสื่อสาร สามารถพิมพ์และปรับแต่งตำแหน่งได้ตามสะดวก การใช้การกระจายคำแบบไทยจะช่วยให้ย่อหน้าดูเป็นระเบียบและสวยงามมากขึ้นสำหรับจดหมายข่าวที่เป็นทางการ</p>
                     <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
                 </div>
             </div>
@@ -586,21 +593,18 @@
             triggerSave();
         }
 
-        // New Vertical Padding Adjustment Function
         function adjustVerticalPadding(direction) {
             if (!selectedEl) return;
-            // Target the editable span/tag inside or the element itself
             const target = selectedEl.querySelector('[contenteditable]') || selectedEl;
             
             const style = window.getComputedStyle(target);
             let pTop = parseInt(style.paddingTop) || 0;
             let pBottom = parseInt(style.paddingBottom) || 0;
 
-            if (direction === -1) { // Move Up: Increase bottom padding
+            if (direction === -1) { 
                 pBottom += 1;
-                // Optional: decrease top padding to keep overall height consistent if possible
                 if (pTop > 0) pTop -= 1;
-            } else { // Move Down: Increase top padding
+            } else { 
                 pTop += 1;
                 if (pBottom > 0) pBottom -= 1;
             }
