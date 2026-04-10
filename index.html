@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ระบบแก้ไขจดหมายข่าว - PEA Buachet (Full Tools)</title>
+    <title>ระบบแก้ไขจดหมายข่าว - PEA Buachet (Image Alignment)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
@@ -20,10 +20,10 @@
             --ribbon-c2: #e67e22;
             --header-font: 'Kanit';
             --header-color: #1e1b4b;
-            --img-radius: 24px;
-            --img-border-width: 6px;
+            --img-radius: 16px;
+            --img-border-width: 4px;
             --img-border-c1: #ffffff;
-            --img-border-c2: #f3f4f6;
+            --img-border-c2: #ffffff;
         }
         body { font-family: 'Sarabun', sans-serif; background-color: #f1f5f9; }
         .font-header { font-family: var(--header-font), sans-serif; }
@@ -46,15 +46,20 @@
             touch-action: none;
             user-select: none;
             z-index: 20;
-            box-sizing: border-box;
+            min-width: 50px;
+            min-height: 20px;
+        }
+
+        .draggable-element:hover {
+            outline: 2px dashed #7c3aed;
+            outline-offset: 4px;
         }
 
         .active-element {
             outline: 2px solid #7c3aed !important;
-            outline-offset: 4px;
+            background: rgba(124, 58, 237, 0.05);
         }
 
-        /* Ribbon Styles */
         .ribbon-banner {
             background: linear-gradient(90deg, var(--ribbon-c1) 0%, var(--ribbon-c2) 100%);
             transition: all 0.3s ease;
@@ -65,45 +70,48 @@
             line-height: 1.2; 
         }
 
-        /* Image Frame Styles */
         .draggable-frame {
             padding: var(--img-border-width);
             background: linear-gradient(135deg, var(--img-border-c1), var(--img-border-c2));
-            box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
             overflow: hidden;
             border-radius: var(--img-radius);
             transition: all 0.3s ease;
             display: flex;
         }
         
+        /* แก้ไขส่วนกรอบภาพให้จัดวางกึ่งกลางเสมอ */
         .draggable-frame .img-container {
             width: 100%;
             height: 100%;
             overflow: hidden;
             border-radius: calc(var(--img-radius) - (var(--img-border-width) / 1.5));
-            background: #e5e7eb;
+            background: #f8f8f8; /* สีพื้นหลังกรอบเพื่อความชัดเจน */
             position: relative;
-            box-shadow: inset 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center; /* จัดกึ่งกลางแนวตั้ง */
+            justify-content: center; /* จัดกึ่งกลางแนวนอน */
         }
 
+        /* ตั้งค่าให้รูปภาพอยู่ตรงกลางและอยู่ภายใต้ขอบเขตของกรอบ (Contain) */
         .draggable-frame img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto; /* ให้กว้างตามสัดส่วน */
+            height: auto; /* ให้สูงตามสัดส่วน */
+            object-fit: contain; /* มั่นใจว่าภาพไม่ตกกรอบและไม่ถูกตัด */
             object-position: center;
             pointer-events: none;
             display: block;
         }
 
-        /* Controls Appearance */
         .resize-handle {
             position: absolute;
-            width: 18px;
-            height: 18px;
-            background: #ffffff;
-            border: 3px solid #7c3aed;
-            bottom: -5px;
-            right: -5px;
+            width: 15px;
+            height: 15px;
+            background: #7c3aed;
+            bottom: -7px;
+            right: -7px;
             cursor: nwse-resize;
             border-radius: 50%;
             z-index: 60;
@@ -111,8 +119,8 @@
 
         .delete-btn {
             position: absolute;
-            top: -10px;
-            left: -10px;
+            top: -12px;
+            left: -12px;
             width: 24px;
             height: 24px;
             background: #ef4444;
@@ -121,28 +129,11 @@
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 14px;
             cursor: pointer;
-            z-index: 100;
+            z-index: 101;
         }
         .draggable-element:hover .delete-btn { display: flex; }
-
-        .crop-trigger-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(124, 58, 237, 0.9);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            opacity: 0;
-            transition: opacity 0.2s;
-            z-index: 30;
-        }
-        .draggable-frame:hover .crop-trigger-btn { opacity: 1; }
 
         #crop-modal {
             display: none;
@@ -155,38 +146,56 @@
             padding: 20px;
         }
 
+        .card-footer {
+            margin-top: auto;
+            padding: 30px 40px;
+            background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(8px);
+            border-top: 1px solid rgba(124, 58, 237, 0.1);
+        }
+        
+        .footer-editable { outline: none; transition: all 0.2s; cursor: text; }
+        .footer-editable:hover { background: rgba(124, 58, 237, 0.05); border-radius: 4px; }
+
         .text-distributed {
             text-align: justify;
             text-justify: inter-character;
         }
 
-        .card-footer {
-            margin-top: auto;
-            padding: 30px 40px;
-            background: rgba(255,255,255,0.3);
-            border-top: 1px solid rgba(0,0,0,0.05);
+        .crop-trigger-btn {
+            position: absolute;
+            bottom: 5px;
+            right: 5px;
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 30;
         }
+        .draggable-frame:hover .crop-trigger-btn { opacity: 1; }
     </style>
 </head>
-<body class="flex min-h-screen">
+<body class="flex min-h-screen overflow-x-hidden">
 
-    <!-- Sidebar Tools -->
-    <aside class="w-80 h-screen bg-white border-r fixed left-0 top-0 overflow-y-auto p-5 z-50 shadow-2xl no-print">
+    <!-- Sidebar -->
+    <aside class="w-80 h-screen bg-white border-r fixed left-0 top-0 overflow-y-auto p-5 z-50 shadow-xl no-print">
         <div class="mb-6 text-center border-b pb-4">
-            <h2 class="text-xl font-bold font-header text-indigo-900">PEA News Studio</h2>
-            <p class="text-[10px] text-purple-500 font-bold tracking-widest uppercase">เครื่องมือแก้ไขครบวงจร</p>
+            <h2 class="text-xl font-bold font-header italic text-indigo-900">Designer Typography</h2>
+            <p class="text-[10px] text-purple-500 font-bold uppercase tracking-widest mt-1">by PEA Buachet</p>
         </div>
 
         <div class="space-y-6">
-            <!-- Typography -->
-            <section class="space-y-3 p-4 bg-indigo-50 rounded-2xl border border-indigo-100">
-                <h3 class="text-xs font-bold text-indigo-700 uppercase italic flex items-center gap-2">
-                    <span>Aa</span> ตัวอักษร
-                </h3>
+            <!-- Typography Advanced Controls -->
+            <section class="space-y-3 p-3 bg-indigo-50 rounded-xl border border-indigo-200 shadow-sm">
+                
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="text-[9px] text-gray-500 block mb-1">ฟอนต์</label>
-                        <select onchange="applyStyle('fontFamily', this.value)" class="w-full text-xs p-2 rounded border bg-white">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase block mb-1">ฟอนต์</label>
+                        <select id="font-family-select" onchange="applyStyle('fontFamily', this.value)" class="w-full text-xs p-1 rounded border bg-white">
                             <option value="Kanit">Kanit</option>
                             <option value="Sarabun">Sarabun</option>
                             <option value="Chakra Petch">Chakra Petch</option>
@@ -195,184 +204,232 @@
                         </select>
                     </div>
                     <div>
-                        <label class="text-[9px] text-gray-500 block mb-1">ขนาด (px)</label>
-                        <input type="number" oninput="applyStyle('fontSize', this.value + 'px')" value="18" class="w-full text-xs p-2 rounded border bg-white">
+                        <label class="text-[9px] font-bold text-gray-500 uppercase block mb-1">ขนาด (px)</label>
+                        <input type="number" id="font-size-input" oninput="applyStyle('fontSize', this.value + 'px')" value="16" class="w-full text-xs p-1 rounded border bg-white">
                     </div>
+                </div>
+
+                <div class="flex gap-1 justify-between">
+                    <button onclick="toggleStyle('fontWeight', 'bold', 'normal')" class="flex-1 py-1 bg-white border rounded text-xs font-bold hover:bg-indigo-100">B</button>
+                    <button onclick="toggleStyle('fontStyle', 'italic', 'normal')" class="flex-1 py-1 bg-white border rounded text-xs italic hover:bg-indigo-100">I</button>
+                    <button onclick="toggleStyle('textDecoration', 'underline', 'none')" class="flex-1 py-1 bg-white border rounded text-xs underline hover:bg-indigo-100">U</button>
+                    <input type="color" id="text-color-picker" oninput="applyStyle('color', this.value)" class="w-8 h-7 cursor-pointer rounded border p-0">
+                </div>
+
+                <div>
+                    <label class="text-[9px] font-bold text-gray-500 uppercase block mb-1">การจัดวาง (Alignment)</label>
+                    <div class="grid grid-cols-5 gap-1">
+                        <button onclick="applyAlignment('left')" class="p-1 bg-white border rounded text-[10px] hover:bg-indigo-100" title="ชิดซ้าย">L</button>
+                        <button onclick="applyAlignment('center')" class="p-1 bg-white border rounded text-[10px] hover:bg-indigo-100" title="กึ่งกลาง">C</button>
+                        <button onclick="applyAlignment('right')" class="p-1 bg-white border rounded text-[10px] hover:bg-indigo-100" title="ชิดขวา">R</button>
+                        <button onclick="applyAlignment('justify')" class="p-1 bg-white border rounded text-[10px] hover:bg-indigo-100" title="กระจาย">J</button>
+                        <button onclick="applyAlignment('distributed')" class="p-1 bg-white border rounded text-[10px] hover:bg-indigo-100" title="กระจายไทย">D</button>
+                    </div>
+                </div>
+
+                <!-- Vertical Fix Menu -->
+                <div class="pt-2 border-t border-indigo-100">
+                    <label class="text-[9px] font-bold text-indigo-600 uppercase block mb-1">การจัดวางแนวตั้ง (Vertical Fix)</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="adjustVerticalPadding(-1)" class="py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1">
+                            ขยับขึ้น ↑
+                        </button>
+                        <button onclick="adjustVerticalPadding(1)" class="py-1 bg-indigo-600 text-white rounded text-xs hover:bg-indigo-700 transition-colors flex items-center justify-center gap-1">
+                            ขยับลง ↓
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Background & Ribbon -->
+            <section class="space-y-3 p-3 bg-slate-50 rounded-xl border border-slate-200">
+                <h3 class="text-xs font-black text-slate-700 uppercase italic">🏞️ พื้นหลัง & แถบหัวข้อ</h3>
+                <div class="flex gap-2">
+                    <input type="color" id="input-bg-1" oninput="updateStyleVar('--bg-color-1', this.value)" value="#fdfaff" class="flex-1 h-8 cursor-pointer rounded border-0">
+                    <input type="color" id="input-bg-2" oninput="updateStyleVar('--bg-color-2', this.value)" value="#f5f3ff" class="flex-1 h-8 cursor-pointer rounded border-0">
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="toggleStyle('fontWeight', 'bold', 'normal')" class="flex-1 py-2 bg-white border rounded text-xs font-bold hover:bg-white">B</button>
-                    <button onclick="toggleStyle('fontStyle', 'italic', 'normal')" class="flex-1 py-2 bg-white border rounded text-xs italic hover:bg-white">I</button>
-                    <input type="color" oninput="applyStyle('color', this.value)" class="w-12 h-8 cursor-pointer rounded border p-0 bg-white">
+                    <input type="color" id="input-ribbon-1" oninput="updateStyleVar('--ribbon-c1', this.value)" value="#632c91" class="flex-1 h-8 cursor-pointer rounded border-0">
+                    <input type="color" id="input-ribbon-2" oninput="updateStyleVar('--ribbon-c2', this.value)" value="#e67e22" class="flex-1 h-8 cursor-pointer rounded border-0">
                 </div>
-                <div class="grid grid-cols-5 gap-1">
-                    <button onclick="applyAlignment('left')" class="p-2 bg-white border rounded text-[10px]">L</button>
-                    <button onclick="applyAlignment('center')" class="p-2 bg-white border rounded text-[10px]">C</button>
-                    <button onclick="applyAlignment('right')" class="p-2 bg-white border rounded text-[10px]">R</button>
-                    <button onclick="applyAlignment('justify')" class="p-2 bg-white border rounded text-[10px]">J</button>
-                    <button onclick="applyAlignment('distributed')" class="p-2 bg-white border rounded text-[10px]">D</button>
+                <div class="grid grid-cols-3 gap-1">
+                    <button onclick="updateRibbonShape('0px')" class="p-1 text-[10px] bg-white border rounded">เหลี่ยม</button>
+                    <button onclick="updateRibbonShape('12px')" class="p-1 text-[10px] bg-white border rounded">มน</button>
+                    <button onclick="updateRibbonShape('9999px')" class="p-1 text-[10px] bg-white border rounded">วงรี</button>
                 </div>
             </section>
 
-            <!-- Card & Ribbon Colors -->
-            <section class="space-y-3 p-4 bg-slate-50 rounded-2xl border border-slate-200">
-                <h3 class="text-xs font-bold text-slate-700 uppercase italic">🎨 พื้นหลัง & แถบสี</h3>
-                <div class="space-y-2">
-                    <label class="text-[9px] text-gray-500 block uppercase">สีพื้นหลังการ์ด (Gradient)</label>
-                    <div class="flex gap-2">
-                        <input type="color" oninput="updateStyleVar('--bg-color-1', this.value)" value="#fdfaff" class="flex-1 h-8 rounded border p-0">
-                        <input type="color" oninput="updateStyleVar('--bg-color-2', this.value)" value="#f5f3ff" class="flex-1 h-8 rounded border p-0">
-                    </div>
-                </div>
-                <div class="space-y-2">
-                    <label class="text-[9px] text-gray-500 block uppercase">สีแถบ Ribbon (Gradient)</label>
-                    <div class="flex gap-2">
-                        <input type="color" oninput="updateStyleVar('--ribbon-c1', this.value)" value="#632c91" class="flex-1 h-8 rounded border p-0">
-                        <input type="color" oninput="updateStyleVar('--ribbon-c2', this.value)" value="#e67e22" class="flex-1 h-8 rounded border p-0">
-                    </div>
-                </div>
-            </section>
-
-            <!-- Frame Customization -->
-            <section class="space-y-3 p-4 bg-purple-50 rounded-2xl border border-purple-100">
-                <h3 class="text-xs font-bold text-purple-700 uppercase italic">🖼️ ปรับแต่งกรอบรูป</h3>
-                <div class="space-y-2">
-                    <label class="text-[9px] text-gray-500 block uppercase">สีกรอบ (Gradient)</label>
-                    <div class="flex gap-2">
-                        <input type="color" oninput="updateStyleVar('--img-border-c1', this.value)" value="#ffffff" class="flex-1 h-8 rounded border p-0">
-                        <input type="color" oninput="updateStyleVar('--img-border-c2', this.value)" value="#f3f4f6" class="flex-1 h-8 rounded border p-0">
-                    </div>
-                </div>
+            <!-- Image Styling Control -->
+            <section class="space-y-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
+                <h3 class="text-xs font-black text-blue-700 uppercase italic">🖼️ ปรับแต่งกรอบรูปภาพ</h3>
                 <div>
-                    <label class="text-[9px] text-gray-500 block mb-1 uppercase">ความมนของรูป</label>
-                    <input type="range" min="0" max="100" value="24" oninput="updateStyleVar('--img-radius', this.value + 'px')" class="w-full">
-                </div>
-                <div>
-                    <label class="text-[9px] text-gray-500 block mb-1 uppercase">ความหนาขอบ</label>
-                    <input type="range" min="0" max="25" value="6" oninput="updateStyleVar('--img-border-width', this.value + 'px')" class="w-full">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase block mb-1">สีกรอบ & ความมน</label>
+                    <div class="flex gap-2 mb-2">
+                        <input type="color" id="input-border-1" oninput="updateStyleVar('--img-border-c1', this.value)" value="#ffffff" class="flex-1 h-8 cursor-pointer rounded">
+                        <input type="color" id="input-border-2" oninput="updateStyleVar('--img-border-c2', this.value)" value="#ffffff" class="flex-1 h-8 cursor-pointer rounded">
+                    </div>
+                    <input type="range" id="input-radius" min="0" max="60" value="16" oninput="updateStyleVar('--img-radius', this.value + 'px')" class="w-full accent-blue-600">
                 </div>
             </section>
 
-            <!-- Image Library -->
-            <section class="space-y-2 p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                <h3 class="text-xs font-bold text-emerald-700 uppercase italic">📸 อัปโหลดรูปภาพ</h3>
-                <button onclick="document.getElementById('file-img-1').click()" class="w-full py-2 bg-emerald-600 text-white text-[10px] font-bold rounded-lg shadow-sm">เปลี่ยนรูปภาพหลัก</button>
-                <div class="grid grid-cols-2 gap-2 mt-2">
-                    <button onclick="document.getElementById('file-img-2').click()" class="py-2 bg-white border text-emerald-700 text-[10px] font-bold rounded shadow-sm">รูป 2</button>
-                    <button onclick="document.getElementById('file-img-3').click()" class="py-2 bg-white border text-emerald-700 text-[10px] font-bold rounded shadow-sm">รูป 3</button>
-                    <button onclick="document.getElementById('file-img-4').click()" class="py-2 bg-white border text-emerald-700 text-[10px] font-bold rounded shadow-sm">รูป 4</button>
-                    <button onclick="document.getElementById('file-img-5').click()" class="py-2 bg-white border text-emerald-700 text-[10px] font-bold rounded shadow-sm">รูป 5</button>
+            <!-- Add & Media -->
+            <section class="space-y-3 p-3 bg-purple-50 rounded-xl border border-purple-100">
+                <h3 class="text-xs font-black text-purple-700 uppercase italic">➕ เพิ่ม & สื่อ</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="addNewText('H2')" class="py-2 bg-white border border-purple-200 text-[10px] font-bold rounded">หัวข้อหลัก</button>
+                    <button onclick="addNewText('P')" class="py-2 bg-white border border-purple-200 text-[10px] font-bold rounded">เนื้อหา</button>
+                    <button onclick="document.getElementById('logo-upload').click()" class="py-2 bg-amber-500 text-white text-[10px] font-bold rounded">โลโก้ 1</button>
+                    <button onclick="document.getElementById('logo-2-upload').click()" class="py-2 bg-amber-600 text-white text-[10px] font-bold rounded">โลโก้ 2</button>
                 </div>
+                
+                <div class="space-y-1">
+                    <label class="text-[9px] font-bold text-gray-500 uppercase block mb-1">อัปโหลดรูปภาพกิจกรรม</label>
+                    <button onclick="document.getElementById('file-img-1').click()" class="w-full py-1.5 bg-slate-700 text-white text-[10px] rounded hover:bg-slate-800">รูปหลัก (ใหญ่)</button>
+                    <div class="grid grid-cols-2 gap-1 mt-1">
+                        <button onclick="document.getElementById('file-img-2').click()" class="py-1.5 bg-slate-600 text-white text-[10px] rounded">รูป 2</button>
+                        <button onclick="document.getElementById('file-img-3').click()" class="py-1.5 bg-slate-600 text-white text-[10px] rounded">รูป 3</button>
+                        <button onclick="document.getElementById('file-img-4').click()" class="py-1.5 bg-slate-600 text-white text-[10px] rounded">รูป 4</button>
+                        <button onclick="document.getElementById('file-img-5').click()" class="py-1.5 bg-slate-600 text-white text-[10px] rounded">รูป 5</button>
+                    </div>
+                </div>
+                
                 <!-- Hidden Inputs -->
-                <input type="file" id="file-img-1" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'img-1')">
-                <input type="file" id="file-img-2" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'img-2')">
-                <input type="file" id="file-img-3" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'img-3')">
-                <input type="file" id="file-img-4" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'img-4')">
-                <input type="file" id="file-img-5" accept="image/*" class="hidden" onchange="handleImageSelect(event, 'img-5')">
+                <input type="file" id="logo-upload" accept="image/*" class="hidden" onchange="handleLogoUpload(event, 'main-logo')">
+                <input type="file" id="logo-2-upload" accept="image/*" class="hidden" onchange="handleLogoUpload(event, 'secondary-logo')">
+                <input type="file" id="file-img-1" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'img-1')">
+                <input type="file" id="file-img-2" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'img-2')">
+                <input type="file" id="file-img-3" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'img-3')">
+                <input type="file" id="file-img-4" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'img-4')">
+                <input type="file" id="file-img-5" accept="image/*" class="hidden" onchange="handleImageFileSelect(event, 'img-5')">
             </section>
 
-            <div class="pt-4 space-y-2">
-                <button onclick="saveNewsletter()" class="w-full bg-indigo-900 text-white font-bold py-4 rounded-2xl shadow-xl hover:bg-black transition-all">
-                    💾 บันทึกจดหมายข่าว
+            <div class="space-y-2">
+                <button onclick="saveNewsletter()" class="w-full bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-emerald-700">
+                    💾 ดาวน์โหลดรูปภาพ
                 </button>
-                <button onclick="resetData()" class="w-full py-2 text-red-400 text-[10px] font-bold">RESET ALL</button>
+                <button onclick="resetData()" class="w-full bg-red-100 text-red-600 font-bold py-2 rounded-xl border border-red-200 hover:bg-red-200 transition-all text-xs">
+                    🔄 ล้างข้อมูล / เริ่มใหม่
+                </button>
             </div>
         </div>
     </aside>
 
-    <!-- Main Workspace -->
+    <!-- Main Content -->
     <main class="flex-1 ml-80 p-10 flex justify-center items-start overflow-auto bg-slate-200">
         <div id="pr-card" class="shadow-2xl rounded-[40px]">
-            <!-- Logo Section -->
-            <div id="el-logo" class="draggable-element" style="width: 80px; height: 80px; top: 30px; left: 380px;" onclick="selectElement(this)">
-                <img src="https://via.placeholder.com/150?text=LOGO" class="w-full h-full object-contain pointer-events-none">
+            
+            <!-- Logo 1 -->
+            <div id="el-logo1" class="draggable-element" style="width: 100px; height: 100px; top: 20px; left: 310px;" onclick="selectElement(this)">
+                <img id="main-logo" src="https://via.placeholder.com/150x150?text=LOGO+1" class="w-full h-full object-contain pointer-events-none">
                 <div class="resize-handle"></div>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
             </div>
 
-            <div id="el-title" class="draggable-element" style="width: 100%; top: 125px; left: 0; text-align: center;" onclick="selectElement(this)">
-                <h1 contenteditable="true" class="font-bold font-header uppercase tracking-[0.15em] text-indigo-950" style="font-size: 22px;">การไฟฟ้าส่วนภูมิภาคสาขาบัวเชด</h1>
+            <!-- Logo 2 -->
+            <div id="el-logo2" class="draggable-element" style="width: 100px; height: 100px; top: 20px; left: 430px;" onclick="selectElement(this)">
+                <img id="secondary-logo" src="https://via.placeholder.com/150x150?text=LOGO+2" class="w-full h-full object-contain pointer-events-none">
+                <div class="resize-handle"></div>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
             </div>
 
-            <!-- News Ribbon -->
-            <div id="el-ribbon" class="draggable-element" style="width: 100%; top: 175px; left: 0; display: flex; justify-content: center;" onclick="selectElement(this)">
-                <div class="ribbon-banner px-12 py-3 rounded-full shadow-lg">
-                    <span contenteditable="true" class="text-white text-xl font-black font-header italic tracking-wider">ข่าวกิจกรรม PEA BUACHET</span>
+            <!-- Header Text -->
+            <div id="el-header" class="draggable-element" style="width: 100%; top: 135px; left: 0; text-align: center;" onclick="selectElement(this)">
+                <h1 contenteditable="true" class="font-bold font-header uppercase tracking-wider" style="font-size: 22px; color: var(--header-color);">การไฟฟ้าส่วนภูมิภาคสาขาบัวเชด</h1>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
+            </div>
+
+            <!-- Ribbon -->
+            <div id="ribbon-container" class="draggable-element" style="width: 100%; top: 180px; left: 0; display: flex; justify-content: center;" onclick="selectElement(this)">
+                <div id="main-ribbon" class="ribbon-banner px-12 py-2 rounded-[9999px] shadow-lg min-h-[50px]">
+                    <span contenteditable="true" class="text-white text-xl font-black font-header tracking-widest drop-shadow-md whitespace-nowrap" style="line-height: 1.4;">PEA SAFETY CULTURE : PSC</span>
                 </div>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
             </div>
 
-            <!-- Images -->
-            <div id="el-img-main" class="draggable-element draggable-frame" style="width: 760px; height: 400px; top: 250px; left: 40px;" onclick="selectElement(this)">
+            <!-- Main Image -->
+            <div id="el-img-main" class="draggable-element draggable-frame" style="width: 760px; height: 340px; top: 250px; left: 40px;" onclick="selectElement(this)">
                 <div class="img-container">
-                    <img src="https://via.placeholder.com/800x400?text=Main+Photo" id="img-1">
-                    <div class="crop-trigger-btn" onclick="openCrop('img-1')">CROP</div>
+                    <img src="https://via.placeholder.com/800x400?text=Main+Image" id="img-1">
+                    <div class="crop-trigger-btn" onclick="openCrop('img-1')">Crop</div>
                 </div>
                 <div class="resize-handle"></div>
                 <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
             </div>
 
-            <!-- Supporting Images -->
-            <div id="el-img-sub1" class="draggable-element draggable-frame" style="width: 175px; height: 110px; top: 670px; left: 40px;" onclick="selectElement(this)">
-                <div class="img-container">
-                    <img src="https://via.placeholder.com/200?text=Sub+1" id="img-2">
-                    <div class="crop-trigger-btn" onclick="openCrop('img-2')">CROP</div>
+            <!-- News Content -->
+            <div id="dynamic-texts">
+                <div id="el-news-title" class="draggable-element" style="width: 700px; top: 760px; left: 70px;" onclick="selectElement(this)">
+                    <h2 contenteditable="true" class="text-3xl font-black text-purple-900 font-header leading-tight">พาดหัวข่าวกิจกรรมเด่น</h2>
+                    <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
                 </div>
-                <div class="resize-handle"></div>
-                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
-            </div>
-            <div id="el-img-sub2" class="draggable-element draggable-frame" style="width: 175px; height: 110px; top: 670px; left: 235px;" onclick="selectElement(this)">
-                <div class="img-container">
-                    <img src="https://via.placeholder.com/200?text=Sub+2" id="img-3">
-                    <div class="crop-trigger-btn" onclick="openCrop('img-3')">CROP</div>
+                <div id="el-news-body" class="draggable-element" style="width: 700px; top: 815px; left: 70px;" onclick="selectElement(this)">
+                    <p contenteditable="true" class="text-lg text-slate-800 leading-relaxed text-distributed">รายละเอียดกิจกรรมที่คุณต้องการสื่อสาร สามารถพิมพ์และปรับแต่งตำแหน่งได้ตามสะดวก การใช้การกระจายคำแบบไทยจะช่วยให้ย่อหน้าดูเป็นระเบียบและสวยงามมากขึ้นสำหรับจดหมายข่าวที่เป็นทางการ</p>
+                    <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
                 </div>
-                <div class="resize-handle"></div>
-                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
-            </div>
-            <div id="el-img-sub3" class="draggable-element draggable-frame" style="width: 175px; height: 110px; top: 670px; left: 430px;" onclick="selectElement(this)">
-                <div class="img-container">
-                    <img src="https://via.placeholder.com/200?text=Sub+3" id="img-4">
-                    <div class="crop-trigger-btn" onclick="openCrop('img-4')">CROP</div>
-                </div>
-                <div class="resize-handle"></div>
-                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
-            </div>
-            <div id="el-img-sub4" class="draggable-element draggable-frame" style="width: 175px; height: 110px; top: 670px; left: 625px;" onclick="selectElement(this)">
-                <div class="img-container">
-                    <img src="https://via.placeholder.com/200?text=Sub+4" id="img-5">
-                    <div class="crop-trigger-btn" onclick="openCrop('img-5')">CROP</div>
-                </div>
-                <div class="resize-handle"></div>
-                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
             </div>
 
-            <!-- Text Content -->
-            <div id="el-news-h" class="draggable-element" style="width: 700px; top: 810px; left: 70px;" onclick="selectElement(this)">
-                <h2 contenteditable="true" class="text-3xl font-black text-indigo-900 font-header leading-tight">ระบุหัวข้อข่าวเด่นที่นี่</h2>
+            <!-- Small Images -->
+            <div id="el-img-sm1" class="draggable-element draggable-frame" style="width: 175px; height: 120px; top: 610px; left: 40px;" onclick="selectElement(this)">
+                <div class="img-container">
+                    <img src="https://via.placeholder.com/200?text=2" id="img-2">
+                    <div class="crop-trigger-btn" onclick="openCrop('img-2')">Crop</div>
+                </div>
+                <div class="resize-handle"></div>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
             </div>
-            <div id="el-news-b" class="draggable-element" style="width: 700px; top: 865px; left: 70px;" onclick="selectElement(this)">
-                <p contenteditable="true" class="text-lg text-slate-700 leading-relaxed text-distributed">พิมพ์เนื้อหาข่าวสารที่ต้องการสื่อสารแก่ประชาชนที่นี่ ระบบจะช่วยจัดย่อหน้าให้ดูสวยงามตามหลักการออกแบบวารสารสมัยใหม่...</p>
+            <div id="el-img-sm2" class="draggable-element draggable-frame" style="width: 175px; height: 120px; top: 610px; left: 235px;" onclick="selectElement(this)">
+                <div class="img-container">
+                    <img src="https://via.placeholder.com/200?text=3" id="img-3">
+                    <div class="crop-trigger-btn" onclick="openCrop('img-3')">Crop</div>
+                </div>
+                <div class="resize-handle"></div>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
+            </div>
+            <div id="el-img-sm3" class="draggable-element draggable-frame" style="width: 175px; height: 120px; top: 610px; left: 430px;" onclick="selectElement(this)">
+                <div class="img-container">
+                    <img src="https://via.placeholder.com/200?text=4" id="img-4">
+                    <div class="crop-trigger-btn" onclick="openCrop('img-4')">Crop</div>
+                </div>
+                <div class="resize-handle"></div>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
+            </div>
+            <div id="el-img-sm4" class="draggable-element draggable-frame" style="width: 175px; height: 120px; top: 610px; left: 625px;" onclick="selectElement(this)">
+                <div class="img-container">
+                    <img src="https://via.placeholder.com/200?text=5" id="img-5">
+                    <div class="crop-trigger-btn" onclick="openCrop('img-5')">Crop</div>
+                </div>
+                <div class="resize-handle"></div>
+                <div class="delete-btn" onclick="this.parentElement.remove()">✕</div>
             </div>
 
             <!-- Footer -->
-            <footer class="card-footer">
-                <div class="flex justify-between items-end">
-                    <div class="border-l-4 border-indigo-600 pl-4">
-                        <p contenteditable="true" class="text-[9px] font-bold text-indigo-400 uppercase tracking-widest mb-1">สว่างทั่วทิศ สร้างคุณภาพชีวิตทั่วไทย</p>
-                        <h4 contenteditable="true" class="text-2xl font-black font-header text-indigo-900">PEA BUACHET</h4>
+            <div id="el-footer" class="card-footer mt-auto">
+                <div class="flex justify-between items-center">
+                    <div class="flex flex-col border-l-4 border-purple-500 pl-4">
+                        <span contenteditable="true" onclick="selectElement(this)" class="text-[10px] font-black text-purple-400 tracking-[0.2em] mb-1 footer-editable uppercase">📞 CONTACT US</span>
+                        <p contenteditable="true" onclick="selectElement(this)" class="text-slate-700 font-bold text-base footer-editable font-header">  </p>
+                    </div>
+                    <div class="text-right flex flex-col items-end pr-2">
+                        <p contenteditable="true" onclick="selectElement(this)" class="text-sm text-slate-500 font-medium italic footer-editable mb-1">"ไฟฟ้าอัจฉริยะเพื่อคุณภาพชีวิตที่ดีอย่างยั่งยืนทั่วไทย"</p>
                     </div>
                 </div>
-            </footer>
+            </div>
         </div>
     </main>
 
     <!-- Crop Modal -->
     <div id="crop-modal">
-        <div class="bg-white p-8 rounded-[32px] max-w-4xl w-full shadow-2xl border border-white/20">
-            <h3 class="text-xl font-bold font-header mb-6">จัดสัดส่วนภาพให้เข้ากับกรอบ</h3>
-            <div class="h-[500px] w-full bg-slate-100 rounded-2xl overflow-hidden shadow-inner">
+        <div class="bg-white p-6 rounded-2xl max-w-3xl w-full shadow-2xl relative">
+            <h3 class="text-lg font-bold mb-4 font-header text-gray-800 text-center">ปรับแต่งตำแหน่งภาพ</h3>
+            <div class="h-[500px] w-full bg-black rounded-lg overflow-hidden">
                 <img id="crop-preview" style="max-width: 100%;">
             </div>
-            <div class="mt-8 flex justify-end gap-3">
-                <button onclick="closeCrop()" class="px-8 py-3 font-bold text-slate-400">ยกเลิก</button>
-                <button onclick="confirmCrop()" class="px-10 py-3 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg">ยืนยันการตัดภาพ</button>
+            <div class="mt-6 flex justify-between items-center">
+                <p class="text-xs text-slate-500">ลากเพื่อย้าย หรือเลื่อนลูกกลิ้งเพื่อขยายภาพภายในกรอบ</p>
+                <div class="flex gap-3">
+                    <button onclick="closeCrop()" class="px-6 py-2 border rounded-xl hover:bg-gray-50 transition-colors">ยกเลิก</button>
+                    <button onclick="confirmCrop()" class="px-6 py-2 bg-purple-600 text-white rounded-xl font-bold hover:bg-purple-700 transition-colors">บันทึกตำแหน่งนี้</button>
+                </div>
             </div>
         </div>
     </div>
@@ -381,53 +438,105 @@
         let selectedEl = null;
         let cropper = null;
         let activeImgId = null;
-        const originals = {};
+        const STORAGE_KEY = 'pea_buachet_newsletter_v5_pro';
+        
+        const originalImages = {}; 
 
-        // Local Storage Sync
         function triggerSave() {
             const data = {
-                html: document.getElementById('pr-card').innerHTML,
-                vars: {
+                htmlContent: document.getElementById('pr-card').innerHTML,
+                cssVars: {
                     '--bg-color-1': getComputedStyle(document.documentElement).getPropertyValue('--bg-color-1'),
                     '--bg-color-2': getComputedStyle(document.documentElement).getPropertyValue('--bg-color-2'),
                     '--ribbon-c1': getComputedStyle(document.documentElement).getPropertyValue('--ribbon-c1'),
                     '--ribbon-c2': getComputedStyle(document.documentElement).getPropertyValue('--ribbon-c2'),
-                    '--img-radius': getComputedStyle(document.documentElement).getPropertyValue('--img-radius'),
-                    '--img-border-width': getComputedStyle(document.documentElement).getPropertyValue('--img-border-width'),
                     '--img-border-c1': getComputedStyle(document.documentElement).getPropertyValue('--img-border-c1'),
-                    '--img-border-c2': getComputedStyle(document.documentElement).getPropertyValue('--img-border-c2')
-                }
+                    '--img-border-c2': getComputedStyle(document.documentElement).getPropertyValue('--img-border-c2'),
+                    '--img-radius': getComputedStyle(document.documentElement).getPropertyValue('--img-radius')
+                },
+                originals: originalImages
             };
-            localStorage.setItem('pea_v7_data', JSON.stringify(data));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
-        // Draggable & Resizable
+        function loadSavedData() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+            const data = JSON.parse(saved);
+            
+            if(data.originals) {
+                Object.assign(originalImages, data.originals);
+            }
+
+            document.getElementById('pr-card').innerHTML = data.htmlContent;
+            
+            Object.keys(data.cssVars).forEach(key => {
+                document.documentElement.style.setProperty(key, data.cssVars[key]);
+            });
+
+            if(document.getElementById('input-bg-1')) document.getElementById('input-bg-1').value = rgbToHex(data.cssVars['--bg-color-1']);
+            if(document.getElementById('input-bg-2')) document.getElementById('input-bg-2').value = rgbToHex(data.cssVars['--bg-color-2']);
+            if(document.getElementById('input-ribbon-1')) document.getElementById('input-ribbon-1').value = rgbToHex(data.cssVars['--ribbon-c1']);
+            if(document.getElementById('input-ribbon-2')) document.getElementById('input-ribbon-2').value = rgbToHex(data.cssVars['--ribbon-c2']);
+            if(document.getElementById('input-border-1')) document.getElementById('input-border-1').value = rgbToHex(data.cssVars['--img-border-c1']);
+            if(document.getElementById('input-border-2')) document.getElementById('input-border-2').value = rgbToHex(data.cssVars['--img-border-c2']);
+            
+            const b1 = data.cssVars['--bg-color-1'];
+            const b2 = data.cssVars['--bg-color-2'];
+            document.getElementById('pr-card').style.background = `linear-gradient(135deg, ${b1} 0%, ${b2} 100%)`;
+        }
+
+        function resetData() {
+            if(confirm('คุณต้องการล้างข้อมูลทั้งหมดและเริ่มใหม่ใช่หรือไม่?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        document.getElementById('pr-card').addEventListener('input', triggerSave);
+
+        function updateStyleVar(varName, value) {
+            document.documentElement.style.setProperty(varName, value);
+            if(varName.includes('--bg-color')) {
+                const b1 = getComputedStyle(document.documentElement).getPropertyValue('--bg-color-1').trim();
+                const b2 = getComputedStyle(document.documentElement).getPropertyValue('--bg-color-2').trim();
+                document.getElementById('pr-card').style.background = `linear-gradient(135deg, ${b1} 0%, ${b2} 100%)`;
+            }
+            triggerSave();
+        }
+
+        function updateRibbonShape(radius) {
+            const ribbon = document.getElementById('main-ribbon');
+            if(ribbon) ribbon.style.borderRadius = radius;
+            triggerSave();
+        }
+
         interact('.draggable-element').draggable({
             listeners: {
-                move(e) {
-                    const t = e.target;
-                    const x = (parseFloat(t.getAttribute('data-x')) || 0) + e.dx;
-                    const y = (parseFloat(t.getAttribute('data-y')) || 0) + e.dy;
-                    t.style.transform = `translate(${x}px, ${y}px)`;
-                    t.setAttribute('data-x', x);
-                    t.setAttribute('data-y', y);
+                move(event) {
+                    const target = event.target;
+                    const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+                    const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+                    target.style.transform = `translate(${x}px, ${y}px)`;
+                    target.setAttribute('data-x', x);
+                    target.setAttribute('data-y', y);
                     triggerSave();
                 }
             }
         }).resizable({
             edges: { right: true, bottom: true, left: true, top: true },
             listeners: {
-                move(e) {
-                    const t = e.target;
-                    let x = (parseFloat(t.getAttribute('data-x')) || 0);
-                    let y = (parseFloat(t.getAttribute('data-y')) || 0);
-                    t.style.width = e.rect.width + 'px';
-                    t.style.height = e.rect.height + 'px';
-                    x += e.deltaRect.left;
-                    y += e.deltaRect.top;
-                    t.style.transform = `translate(${x}px, ${y}px)`;
-                    t.setAttribute('data-x', x);
-                    t.setAttribute('data-y', y);
+                move(event) {
+                    const target = event.target;
+                    let x = (parseFloat(target.getAttribute('data-x')) || 0);
+                    let y = (parseFloat(target.getAttribute('data-y')) || 0);
+                    target.style.width = event.rect.width + 'px';
+                    target.style.height = event.rect.height + 'px';
+                    x += event.deltaRect.left;
+                    y += event.deltaRect.top;
+                    target.style.transform = `translate(${x}px, ${y}px)`;
+                    target.setAttribute('data-x', x);
+                    target.setAttribute('data-y', y);
                     triggerSave();
                 }
             }
@@ -435,23 +544,41 @@
 
         function selectElement(el) {
             if (window.event) window.event.stopPropagation();
+            
             if (selectedEl) selectedEl.classList.remove('active-element');
             selectedEl = el;
             selectedEl.classList.add('active-element');
+            
+            const textEl = selectedEl.hasAttribute('contenteditable') ? selectedEl : selectedEl.querySelector('[contenteditable]');
+            
+            if(textEl) {
+                const style = window.getComputedStyle(textEl);
+                document.getElementById('font-size-input').value = parseInt(style.fontSize) || 16;
+                document.getElementById('font-family-select').value = style.fontFamily.replace(/['"]/g, '').split(',')[0];
+                document.getElementById('text-color-picker').value = rgbToHex(style.color);
+            }
         }
 
-        // Formatting Tools
-        function applyStyle(prop, val) {
+        function rgbToHex(rgb) {
+            if (!rgb || rgb === 'initial' || rgb === 'transparent') return "#000000";
+            if (rgb.startsWith('#')) return rgb;
+            const res = rgb.match(/\d+/g);
+            if (!res) return "#000000";
+            return "#" + res.slice(0, 3).map(x => parseInt(x).toString(16).padStart(2, '0')).join('');
+        }
+
+        function applyStyle(property, value) {
             if (!selectedEl) return;
             const target = selectedEl.querySelector('[contenteditable]') || selectedEl;
-            target.style[prop] = val;
+            target.style[property] = value;
             triggerSave();
         }
 
-        function toggleStyle(prop, act, def) {
+        function toggleStyle(property, activeValue, defaultValue) {
             if (!selectedEl) return;
             const target = selectedEl.querySelector('[contenteditable]') || selectedEl;
-            target.style[prop] = (target.style[prop] === act) ? def : act;
+            const current = target.style[property];
+            target.style[property] = (current === activeValue) ? defaultValue : activeValue;
             triggerSave();
         }
 
@@ -468,76 +595,131 @@
             triggerSave();
         }
 
-        function updateStyleVar(name, val) {
-            document.documentElement.style.setProperty(name, val);
+        function adjustVerticalPadding(direction) {
+            if (!selectedEl) return;
+            const target = selectedEl.querySelector('[contenteditable]') || selectedEl;
+            
+            const style = window.getComputedStyle(target);
+            let pTop = parseInt(style.paddingTop) || 0;
+            let pBottom = parseInt(style.paddingBottom) || 0;
+
+            if (direction === -1) { 
+                pBottom += 1;
+                if (pTop > 0) pTop -= 1;
+            } else { 
+                pTop += 1;
+                if (pBottom > 0) pBottom -= 1;
+            }
+
+            target.style.paddingTop = pTop + 'px';
+            target.style.paddingBottom = pBottom + 'px';
+            
             triggerSave();
         }
 
-        // Image Handling
-        function handleImageSelect(e, id) {
+        function addNewText(type) {
+            const container = document.getElementById('dynamic-texts');
+            const div = document.createElement('div');
+            div.className = 'draggable-element';
+            div.style.width = '400px'; div.style.top = '400px'; div.style.left = '200px';
+            div.onclick = (e) => { e.stopPropagation(); selectElement(div); };
+            let tag = 'p';
+            let cls = 'text-base text-slate-800 leading-relaxed';
+            if(type === 'H2') { tag = 'h2'; cls = 'text-2xl font-bold font-header text-indigo-900'; }
+            div.innerHTML = `<${tag} contenteditable="true" class="${cls} w-full">พิมพ์ข้อความ...</${tag}><div class="resize-handle"></div><div class="delete-btn" onclick="this.parentElement.remove(); triggerSave();">✕</div>`;
+            container.appendChild(div);
+            selectElement(div);
+            triggerSave();
+        }
+
+        function handleLogoUpload(e, targetId) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (ev) => {
-                    originals[id] = ev.target.result;
-                    document.getElementById(id).src = ev.target.result;
-                    openCrop(id);
+                reader.onload = (ev) => { 
+                    document.getElementById(targetId).src = ev.target.result; 
+                    triggerSave();
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        function openCrop(id) {
-            activeImgId = id;
-            const src = originals[id] || document.getElementById(id).src;
-            const prev = document.getElementById('crop-preview');
-            prev.src = src;
+        function handleImageFileSelect(e, imgId) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const base64Data = ev.target.result;
+                    originalImages[imgId] = base64Data;
+                    document.getElementById(imgId).src = base64Data;
+                    openCrop(imgId);
+                    triggerSave();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function openCrop(imgId) {
+            activeImgId = imgId;
+            const sourceImage = originalImages[imgId] || document.getElementById(imgId).src;
+            const preview = document.getElementById('crop-preview');
+            preview.src = sourceImage;
             document.getElementById('crop-modal').style.display = 'flex';
-
-            const frame = document.getElementById(id).parentElement.parentElement;
-            const ratio = frame.offsetWidth / frame.offsetHeight;
-
+            const targetFrame = document.getElementById(imgId).parentElement.parentElement;
+            const frameW = targetFrame.offsetWidth;
+            const frameH = targetFrame.offsetHeight;
             if (cropper) cropper.destroy();
             setTimeout(() => {
-                cropper = new Cropper(prev, {
-                    aspectRatio: ratio,
+                cropper = new Cropper(preview, {
+                    aspectRatio: frameW / frameH,
                     viewMode: 1,
-                    autoCropArea: 1
+                    dragMode: 'move',
+                    autoCropArea: 1,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
                 });
-            }, 200);
+            }, 150);
         }
 
-        function closeCrop() {
-            document.getElementById('crop-modal').style.display = 'none';
-            if (cropper) cropper.destroy();
+        function closeCrop() { 
+            document.getElementById('crop-modal').style.display = 'none'; 
+            if(cropper) cropper.destroy();
         }
-
+        
         function confirmCrop() {
-            const canvas = cropper.getCroppedCanvas({ width: 1200 });
+            if(!cropper) return;
+            const canvas = cropper.getCroppedCanvas({
+                width: 1200,
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high',
+            });
             document.getElementById(activeImgId).src = canvas.toDataURL('image/jpeg', 0.9);
             closeCrop();
             triggerSave();
         }
 
-        // Export
         async function saveNewsletter() {
             if(selectedEl) selectedEl.classList.remove('active-element');
-            document.querySelectorAll('.resize-handle, .delete-btn, .crop-trigger-btn').forEach(el => el.style.opacity = '0');
-            
+            document.querySelectorAll('.resize-handle, .delete-btn, .crop-trigger-btn').forEach(el => el.style.display = 'none');
             const card = document.getElementById('pr-card');
-            const canvas = await html2canvas(card, { scale: 3, useCORS: true });
-            
+            const canvas = await html2canvas(card, { 
+                scale: 2, 
+                useCORS: true,
+                backgroundColor: null
+            });
             const link = document.createElement('a');
-            link.download = `PEA-NEWS-${Date.now()}.png`;
+            link.download = `PEA-PR-Buachet-${new Date().getTime()}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            
-            document.querySelectorAll('.resize-handle, .delete-btn, .crop-trigger-btn').forEach(el => el.style.opacity = '');
+            document.querySelectorAll('.resize-handle, .delete-btn, .crop-trigger-btn').forEach(el => el.style.display = 'flex');
         }
 
-        function resetData() { if(confirm('ต้องการรีเซ็ตใหม่ทั้งหมดหรือไม่?')) { localStorage.clear(); location.reload(); } }
-
-        window.onclick = () => { if(selectedEl) selectedEl.classList.remove('active-element'); selectedEl = null; };
+        window.onload = loadSavedData;
     </script>
 </body>
 </html>
